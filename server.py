@@ -1,5 +1,6 @@
 import influxdb_client
 from influxdb_client.client.write_api import SYNCHRONOUS
+from influxdb_client.domain.write_precision import WritePrecision
 import json
 
 import paho.mqtt.client as mqtt
@@ -42,9 +43,15 @@ def on_message(client, userdata, message):
     payload = json.loads(message.payload)
 
     if 'outputs' in payload:
-        p = influxdb_client.Point("detections").tag("location", "digital_hub").tag("camera_id", camera_id).field("output", json.dumps(payload['outputs']))
-        write_api.write(bucket=bucket, org=org, record=p, write_precision='ms')
         mqtt_data = payload['outputs']
+        for detection in payload['outputs']:
+            p = influxdb_client.Point("detections") \
+                .tag("camera_location", "digital_hub") \
+                .tag("camera_id", camera_id) \
+                .tag("class", detection["class"]) \
+                .field("location", json.dumps(detection["location"])) \
+                .time(payload['timestamp'], write_precision=WritePrecision.MS)
+            write_api.write(bucket=bucket, org=org, record=p)
         
 def on_connect(client, userdata, flags, rc):
     print(f"Connected with result code {rc}")
@@ -64,7 +71,7 @@ async def send_frame(websocket, path):
             
             cap = MerakiCamera(cameras[camera_id])
             while True:
-                await asyncio.sleep(1/10)
+                await asyncio.sleep(1/60)
 
                 await websocket.send(cap.get_frame(mqtt_data))
 
@@ -78,6 +85,8 @@ async def send_frame(websocket, path):
 
     except websockets.exceptions.ConnectionClosedOK:
         print("Client disconnected. Waiting for a new connection...")
+    except Exception as e:
+        print(f"Error on the server: {str(e)}")
 
 if __name__ == '__main__':
     client = mqtt.Client()

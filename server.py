@@ -4,6 +4,7 @@ from influxdb_client.domain.write_precision import WritePrecision
 import json
 
 import paho.mqtt.client as mqtt
+import re
 
 import asyncio
 import websockets
@@ -20,8 +21,6 @@ cameras = {
 ################### MQTT Configuration ####################
 mqtt_broker = '192.168.3.161'
 mqtt_port = 1883
-camera_id = "Q2PV-W8RK-DDVX"
-mqtt_topic = f"/merakimv/{camera_id}/custom_analytics"
 
 ################### InfluxDB Configuration ####################
 bucket = "meraki"
@@ -41,6 +40,7 @@ mqtt_data = None
 def on_message(client, userdata, message):
     global mqtt_data
     payload = json.loads(message.payload)
+    camera_id = re.search(r'/([A-Z0-9\-]+)/custom_analytics', message.topic).group(1)
 
     if 'outputs' in payload:
         mqtt_data = payload['outputs']
@@ -55,7 +55,8 @@ def on_message(client, userdata, message):
         
 def on_connect(client, userdata, flags, rc):
     print(f"Connected with result code {rc}")
-    client.subscribe(mqtt_topic)
+    for camera in cameras:
+        client.subscribe(f"/merakimv/{camera}/custom_analytics")
 
 async def send_frame(websocket, path):
     global mqtt_data

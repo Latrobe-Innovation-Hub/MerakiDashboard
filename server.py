@@ -35,6 +35,7 @@ client = influxdb_client.InfluxDBClient(
 )
 write_api = client.write_api(write_options=SYNCHRONOUS)
 
+clients = {}
 mqtt_data = None
 
 def on_message(client, userdata, message):
@@ -58,33 +59,35 @@ def on_connect(client, userdata, flags, rc):
     for camera in cameras:
         client.subscribe(f"/merakimv/{camera}/custom_analytics")
 
-async def send_frame(websocket, path):
+async def send_frame(websocket, camera_id):
+    try:
+        cap = MerakiCamera(cameras[camera_id])
+        while True:
+            await websocket.send(cap.get_frame(mqtt_data))
+            await asyncio.sleep(1/24)
+    except asyncio.CancelledError:
+        raise
+
+async def handler(websocket, path):
     global mqtt_data
 
     try:
-        print("Client connected.")
-        new_camera_id = None
+        print("New client connected.")
         while True:
+            camera_id = await websocket.recv()
+            print(f"Camera ID: {camera_id}")
+            if websocket not in clients: 
+                clients[websocket] = asyncio.create_task(send_frame(websocket, camera_id))
+            else:
+                clients[websocket].cancel()
+                try:
+                    await clients[websocket]
+                except asyncio.CancelledError:
+                    print("Client task was cancelled.")
+                clients[websocket] = asyncio.create_task(send_frame(websocket, camera_id))
 
-            if new_camera_id is None:
-                camera_id = await websocket.recv()
-                print(f"Camera ID: {camera_id}")
-            
-            cap = MerakiCamera(cameras[camera_id])
-            while True:
-                await asyncio.sleep(1/60)
-
-                await websocket.send(cap.get_frame(mqtt_data))
-
-                if websocket.messages:
-                    new_camera_id = await websocket.recv()
-                    if new_camera_id != camera_id:
-                        print(f"New Camera ID received: {new_camera_id}")
-                        camera_id = new_camera_id
-                        del cap
-                        break
-
-    except websockets.exceptions.ConnectionClosedOK:
+    except websockets.exceptions.ConnectionClosed:
+        clients.pop(websocket, None)
         print("Client disconnected. Waiting for a new connection...")
     except Exception as e:
         print(f"Error on the server: {str(e)}")
@@ -96,7 +99,7 @@ if __name__ == '__main__':
     client.connect(mqtt_broker, mqtt_port, 60)
     client.loop_start()
 
-    start_server = websockets.serve(send_frame, "localhost", 4444)
+    start_server = websockets.serve(handler, "0.0.0.0", 4444)
     print("WebSocket server started.")
     asyncio.get_event_loop().run_until_complete(start_server)
     asyncio.get_event_loop().run_forever()

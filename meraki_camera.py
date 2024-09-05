@@ -4,6 +4,7 @@ import asyncio
 
 class MerakiCamera(object):
     def __init__(self, feed):
+        self.feed = feed
         self.cap = cv2.VideoCapture(feed)
 
     def __del__(self):
@@ -13,7 +14,9 @@ class MerakiCamera(object):
         ret, frame = self.cap.read()
 
         if not ret:
-            return None
+            print("Reconneting to rtsp feed")
+            self.cap.release()
+            self.cap = cv2.VideoCapture(self.feed)
         elif mqtt_output is not None:
             for detection in mqtt_output:
                 if detection['class'] == 0:
@@ -28,5 +31,4 @@ class MerakiCamera(object):
             
         frame = cv2.resize(frame, (1080, 1080))
         _, buffer = cv2.imencode('.jpg', frame)
-        #encoded_image = base64.b64encode(buffer).decode()
         return buffer.tobytes()

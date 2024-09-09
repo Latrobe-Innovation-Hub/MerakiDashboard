@@ -35,7 +35,6 @@ client = influxdb_client.InfluxDBClient(
 )
 write_api = client.write_api(write_options=SYNCHRONOUS)
 
-clients = {}
 mqtt_data = None
 
 def on_message(client, userdata, message):
@@ -70,25 +69,35 @@ async def send_frame(websocket, camera_id):
 
 async def handler(websocket, path):
     global mqtt_data
+    client_ip, client_port = websocket.remote_address
+    tasks = {}
 
     try:
-        print("New client connected.")
+        print(f"New client connected: {client_ip}:{client_port}")
         while True:
-            camera_id = await websocket.recv()
-            print(f"Camera ID: {camera_id}")
-            if websocket not in clients: 
-                clients[websocket] = asyncio.create_task(send_frame(websocket, camera_id))
-            else:
-                clients[websocket].cancel()
-                try:
-                    await clients[websocket]
-                except asyncio.CancelledError:
-                    print("Client task was cancelled.")
-                clients[websocket] = asyncio.create_task(send_frame(websocket, camera_id))
+            requests = json.loads(await websocket.recv())
+            print(f"Client {client_ip}:{client_port} requested: {requests}")
 
-    except websockets.exceptions.ConnectionClosed:
-        clients.pop(websocket, None)
-        print("Client disconnected. Waiting for a new connection...")
+            if requests["frame"]:
+                # If there wasn't a frame task running, create a new one.
+                if "frame" not in tasks: 
+                    tasks["frame"] = asyncio.create_task(send_frame(websocket, requests["camera_id"]))
+                else: # Else cancel the old task and start a new one.
+                    tasks["frame"].cancel()
+                    try:
+                        await tasks["frame"]
+                    except asyncio.CancelledError:
+                        print(f"Client {client_ip}:{client_port} frame-task was cancelled.")
+                    tasks["frame"] = asyncio.create_task(send_frame(websocket, requests["camera_id"]))
+            elif requests["people_count"]:
+                print("People count requested")
+                # TODO: Implement people count logic here.
+
+    except (websockets.exceptions.ConnectionClosedOK, websockets.exceptions.ConnectionClosed):
+        for task in tasks:
+            task.cancel()
+        await asyncio.gather(*tasks.values(), return_exceptions=True)
+        print(f"Client {client_ip}:{client_port} disconnected. Waiting for a new connection...")
     except Exception as e:
         print(f"Error on the server: {str(e)}")
 

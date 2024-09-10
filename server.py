@@ -35,7 +35,7 @@ client = influxdb_client.InfluxDBClient(
 )
 write_api = client.write_api(write_options=SYNCHRONOUS)
 
-mqtt_data = None
+mqtt_data = {}
 
 def on_message(client, userdata, message):
     global mqtt_data
@@ -43,7 +43,7 @@ def on_message(client, userdata, message):
     camera_id = re.search(r'/([A-Z0-9\-]+)/custom_analytics', message.topic).group(1)
 
     if 'outputs' in payload:
-        mqtt_data = payload['outputs']
+        mqtt_data[camera_id] = payload['outputs']
         for detection in payload['outputs']:
             p = influxdb_client.Point("detections") \
                 .tag("camera_location", "digital_hub") \
@@ -62,7 +62,7 @@ async def send_frame(websocket, camera_id):
     try:
         cap = MerakiCamera(cameras[camera_id])
         while True:
-            await websocket.send(cap.get_frame(mqtt_data))
+            await websocket.send(cap.get_frame(mqtt_data[camera_id]))
             await asyncio.sleep(1/24)
     except asyncio.CancelledError:
         raise

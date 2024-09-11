@@ -44,14 +44,25 @@ def on_message(client, userdata, message):
 
     if 'outputs' in payload:
         mqtt_data[camera_id] = payload['outputs']
+
+        people_count = 0
         for detection in payload['outputs']:
-            p = influxdb_client.Point("detections") \
-                .tag("camera_location", "digital_hub") \
-                .tag("camera_id", camera_id) \
-                .tag("class", detection["class"]) \
-                .field("location", json.dumps(detection["location"])) \
-                .time(payload['timestamp'], write_precision=WritePrecision.MS)
-            write_api.write(bucket=bucket, org=org, record=p)
+            if(detection["class"] == 0):
+                people_count = people_count + 1
+
+                p = influxdb_client.Point("detections") \
+                    .tag("camera_location", "digital_hub") \
+                    .tag("camera_id", camera_id) \
+                    .field("bounding_box", json.dumps(detection["location"])) \
+                    .field("id", json.dumps(detection["id"])) \
+                    .field("score", json.dumps(detection["score"]))
+                write_api.write(bucket=bucket, org=org, record=p, write_precision=WritePrecision.S)
+
+        p = influxdb_client.Point("people_count") \
+            .tag("camera_location", "digital_hub") \
+            .tag("camera_id", camera_id) \
+            .field("people_count", people_count)
+        write_api.write(bucket=bucket, org=org, record=p, write_precision=WritePrecision.S)
         
 def on_connect(client, userdata, flags, rc):
     print(f"Connected with result code {rc}")

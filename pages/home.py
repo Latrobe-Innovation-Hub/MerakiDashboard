@@ -92,9 +92,10 @@ def request_people_count(area1, area2, area3):
 
     ctx = dash.callback_context
     json_dict = {
-        "camera_id": ctx.triggered[0]['prop_id'].split('.')[0],
-        "frame": False,
-        "people_count": True
+        "people_count": {
+            "camera_id": ctx.triggered[0]['prop_id'].split('.')[0],
+            "date_range": "7d"
+        }
     }
     print("Requesting data from the server")
     print(json_dict)

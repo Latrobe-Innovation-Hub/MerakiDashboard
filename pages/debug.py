@@ -60,9 +60,9 @@ layout = dbc.Container(
 )
 def send_camera_id(value):
     json_dict = {
-        "camera_id": value,
-        "frame": True,
-        "people_count": False
+        "frame": {
+            "camera_id": value,
+        }
     }
     print(f"Sending camera ID: {json.dumps(json_dict)} to server")
     return json.dumps(json_dict)
@@ -71,9 +71,13 @@ dash.clientside_callback(
     """
     function(message) {
         if (message) {
-            const blob = new Blob([message.data], { type: 'image/jpeg' });
-            const url = URL.createObjectURL(blob);
-            document.getElementById('frame-image').src = url;
+            let data = JSON.parse(message.data);
+            
+            if (data.frame) {
+                const blob = new Blob([data.frame.data], { type: 'image/jpeg' });
+                const url = URL.createObjectURL(blob);
+                document.getElementById('frame-image').src = url;
+            }
         }
     }
     """,

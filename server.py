@@ -69,11 +69,16 @@ def on_connect(client, userdata, flags, rc):
     for camera in cameras:
         client.subscribe(f"/merakimv/{camera}/custom_analytics")
 
-async def send_frame(websocket, camera_id):
+async def send_frame(websocket, request):
     try:
-        cap = MerakiCamera(cameras[camera_id])
+        cap = MerakiCamera(cameras[request["camera_id"]])
         while True:
-            await websocket.send(cap.get_frame(mqtt_data[camera_id]))
+            json_dict = {
+                "frame": {
+                    "data": cap.get_frame(mqtt_data[request["camera_id"]]),
+                }
+            }
+            await websocket.send(json.dumps(json_dict))
             await asyncio.sleep(1/24)
     except asyncio.CancelledError:
         raise
@@ -89,17 +94,17 @@ async def handler(websocket, path):
             requests = json.loads(await websocket.recv())
             print(f"Client {client_ip}:{client_port} requested: {requests}")
 
-            if requests["frame"]:
+            if "frame" in requests:
                 # If there wasn't a frame task running, create a new one.
                 if "frame" not in tasks: 
-                    tasks["frame"] = asyncio.create_task(send_frame(websocket, requests["camera_id"]))
+                    tasks["frame"] = asyncio.create_task(send_frame(websocket, requests["frame"]))
                 else: # Else cancel the old task and start a new one.
                     tasks["frame"].cancel()
                     try:
                         await tasks["frame"]
                     except asyncio.CancelledError:
                         print(f"Client {client_ip}:{client_port} frame-task was cancelled.")
-                    tasks["frame"] = asyncio.create_task(send_frame(websocket, requests["camera_id"]))
+                    tasks["frame"] = asyncio.create_task(send_frame(websocket, requests["frame"]))
             elif requests["people_count"]:
                 print("People count requested")
                 # TODO: Implement people count logic here.

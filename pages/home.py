@@ -66,23 +66,26 @@ layout = dbc.Container(
 def update_graph(message):
     if not message:
         return dash.no_update
-    
-    time_periods = ["1h", "3h", "5h", "1d", "3d", "7d"]
-    data = json.loads(message['data'])
-    people_counts = [int(d) for d in data["people_count"]["data"]]  
+    else:
+        data = json.loads(message['data'])
+        if "people_count" not in data:
+            return dash.no_update
+        
+        time_periods = ["1h", "3h", "5h", "1d", "3d", "7d"]
+        people_counts = [int(d) for d in data["people_count"]["data"]]  
 
-    figure = {
-        'data': [
-            {'x': time_periods, 'y': people_counts, 'type': 'bar', 'name': 'People Count'},
-        ],
-        'layout': {
-            'title': 'People Count Over Time',
-            'xaxis': {'title': 'Time Period'},
-            'yaxis': {'title': 'Number of People'},
+        figure = {
+            'data': [
+                {'x': time_periods, 'y': people_counts, 'type': 'bar', 'name': 'People Count'},
+            ],
+            'layout': {
+                'title': 'People Count Over Time',
+                'xaxis': {'title': 'Time Period'},
+                'yaxis': {'title': 'Number of People'},
+            }
         }
-    }
-    
-    return figure
+        
+        return figure
 
 @callback(
     Output("ws", "send", allow_duplicate=True),

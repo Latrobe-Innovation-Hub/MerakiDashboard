@@ -37,6 +37,7 @@ write_api = client.write_api(write_options=SYNCHRONOUS)
 query_api = client.query_api()
 
 mqtt_data = {}
+map_data_dict = {}
 
 def on_message(client, userdata, message):
     global mqtt_data
@@ -44,8 +45,6 @@ def on_message(client, userdata, message):
     camera_id = re.search(r'/([A-Z0-9\-]+)/custom_analytics', message.topic).group(1)
 
     if 'outputs' in payload:
-        mqtt_data[camera_id] = payload['outputs']
-
         people_count = 0
         for detection in payload['outputs']:
             if(detection["class"] == 0):
@@ -59,6 +58,8 @@ def on_message(client, userdata, message):
                     .field("score", json.dumps(detection["score"]))
                 write_api.write(bucket=bucket, org=org, record=p, write_precision=WritePrecision.S)
 
+        mqtt_data[camera_id] = payload['outputs']
+        map_data_dict[camera_id] = people_count
         p = influxdb_client.Point("people_count") \
             .tag("camera_location", "digital_hub") \
             .tag("camera_id", camera_id) \
@@ -116,8 +117,22 @@ async def send_people_count(websocket, request):
     except asyncio.CancelledError:
         raise
 
+async def send_map_data(websocket, request):
+    try:
+        while True:
+            json_dict = {
+                "map_data": map_data_dict
+            }
+            await websocket.send(json.dumps(json_dict))
+            await asyncio.sleep(1)
+    except asyncio.CancelledError:
+        raise   
+    except Exception as e:
+        print(e)
+
 async def handler(websocket, path):
     global mqtt_data
+    global map_data_dict
     client_ip, client_port = websocket.remote_address
     tasks = {}
 
@@ -148,6 +163,8 @@ async def handler(websocket, path):
                     except asyncio.CancelledError:
                         print(f"Client {client_ip}:{client_port} people_count-task was cancelled.")
                     tasks["people_count"] = asyncio.create_task(send_people_count(websocket, requests["people_count"]))
+            elif "map_data" in requests:
+                tasks["map_data"] = asyncio.create_task(send_map_data(websocket, requests["map_data"]))
 
     except (websockets.exceptions.ConnectionClosedOK, websockets.exceptions.ConnectionClosed):
         for task in tasks.values():

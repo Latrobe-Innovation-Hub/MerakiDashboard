@@ -34,6 +34,7 @@ client = influxdb_client.InfluxDBClient(
     org=org
 )
 write_api = client.write_api(write_options=SYNCHRONOUS)
+query_api = client.query_api()
 
 mqtt_data = {}
 
@@ -69,6 +70,25 @@ def on_connect(client, userdata, flags, rc):
     for camera in cameras:
         client.subscribe(f"/merakimv/{camera}/custom_analytics")
 
+def query_people_count(camera_id, date_range):
+    query = f'from(bucket:"meraki")\
+    |> range(start: -{date_range})\
+    |> filter(fn: (r) => r["_measurement"] == "people_count")\
+    |> filter(fn:(r) => r.camera_id == "{camera_id}")\
+    |> aggregateWindow(every: 1d, fn: mean)'
+
+    result = query_api.query(org=org, query=query)
+    data = []
+    for table in result:
+        for record in table.records:
+            value = record.get_value()
+            if value is not None:
+                data.append(round(value))
+            else:
+                data.append(0)
+    
+    return data
+
 async def send_frame(websocket, request):
     try:
         cap = MerakiCamera(cameras[request["camera_id"]])
@@ -80,6 +100,19 @@ async def send_frame(websocket, request):
             }
             await websocket.send(json.dumps(json_dict))
             await asyncio.sleep(1/24)
+    except asyncio.CancelledError:
+        raise
+
+async def send_people_count(websocket, request):
+    try:
+        while True:
+            json_dict = {
+                "people_count": {
+                    "data": query_people_count(request["camera_id"], request["date_range"]),
+                }
+            }
+            await websocket.send(json.dumps(json_dict))
+            await asyncio.sleep(900) # Send data every 15 minutes
     except asyncio.CancelledError:
         raise
 
@@ -105,12 +138,19 @@ async def handler(websocket, path):
                     except asyncio.CancelledError:
                         print(f"Client {client_ip}:{client_port} frame-task was cancelled.")
                     tasks["frame"] = asyncio.create_task(send_frame(websocket, requests["frame"]))
-            elif requests["people_count"]:
-                print("People count requested")
-                # TODO: Implement people count logic here.
+            elif "people_count" in requests:
+                if "people_count" not in tasks: 
+                    tasks["people_count"] = asyncio.create_task(send_people_count(websocket, requests["people_count"]))
+                else: # Else cancel the old task and start a new one.
+                    tasks["people_count"].cancel()
+                    try:
+                        await tasks["people_count"]
+                    except asyncio.CancelledError:
+                        print(f"Client {client_ip}:{client_port} people_count-task was cancelled.")
+                    tasks["people_count"] = asyncio.create_task(send_people_count(websocket, requests["people_count"]))
 
     except (websockets.exceptions.ConnectionClosedOK, websockets.exceptions.ConnectionClosed):
-        for task in tasks:
+        for task in tasks.values():
             task.cancel()
         await asyncio.gather(*tasks.values(), return_exceptions=True)
         print(f"Client {client_ip}:{client_port} disconnected. Waiting for a new connection...")

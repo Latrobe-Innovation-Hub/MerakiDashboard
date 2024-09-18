@@ -64,8 +64,12 @@ layout = dbc.Container(
     Input("ws", "message")  # This assumes you will get the data via WebSocket
 )
 def update_graph(message):
+    if not message:
+        return dash.no_update
+    
     time_periods = ["1h", "3h", "5h", "1d", "3d", "7d"]
-    people_counts = [5, 12, 20, 35, 50, 75]
+    data = json.loads(message['data'])
+    people_counts = [int(d) for d in data["people_count"]["data"]]  
 
     figure = {
         'data': [

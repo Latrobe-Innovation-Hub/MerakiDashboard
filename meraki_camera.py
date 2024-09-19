@@ -13,11 +13,13 @@ class MerakiCamera(object):
     def get_frame(self, mqtt_output):
         ret, frame = self.cap.read()
 
-        if not ret:
+        while not ret:
             print("Reconneting to rtsp feed")
             self.cap.release()
             self.cap = cv2.VideoCapture(self.feed)
-        elif mqtt_output is not None:
+            ret, frame = self.cap.read()
+            
+        if mqtt_output is not None:
             for detection in mqtt_output:
                 if detection['class'] == 0:
                     x1, y1, x2, y2 = detection['location']

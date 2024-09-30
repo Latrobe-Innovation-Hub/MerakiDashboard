@@ -2,6 +2,7 @@ import influxdb_client
 from influxdb_client.client.write_api import SYNCHRONOUS
 from influxdb_client.domain.write_precision import WritePrecision
 import json
+import datetime
 
 import paho.mqtt.client as mqtt
 import re
@@ -50,21 +51,8 @@ def on_message(client, userdata, message):
             if(detection["class"] == 0):
                 people_count = people_count + 1
 
-                p = influxdb_client.Point("detections") \
-                    .tag("camera_location", "digital_hub") \
-                    .tag("camera_id", camera_id) \
-                    .field("bounding_box", json.dumps(detection["location"])) \
-                    .field("id", json.dumps(detection["id"])) \
-                    .field("score", json.dumps(detection["score"]))
-                write_api.write(bucket=bucket, org=org, record=p, write_precision=WritePrecision.S)
-
-        mqtt_data[camera_id] = payload['outputs']
         map_data_dict[camera_id] = people_count
-        p = influxdb_client.Point("people_count") \
-            .tag("camera_location", "digital_hub") \
-            .tag("camera_id", camera_id) \
-            .field("people_count", people_count)
-        write_api.write(bucket=bucket, org=org, record=p, write_precision=WritePrecision.S)
+        mqtt_data[camera_id] = payload['outputs']
         
 def on_connect(client, userdata, flags, rc):
     print(f"Connected with result code {rc}")
@@ -89,6 +77,47 @@ def query_people_count(camera_id, date_range):
                 data.append(0)
     
     return data
+
+async def write_influx_data():
+    try: 
+        for camera_id, raw_data in mqtt_data.items():
+            for detection in raw_data:
+                if(detection["class"] == 0):
+                    p = influxdb_client.Point("detections") \
+                        .tag("camera_location", "digital_hub") \
+                        .tag("camera_id", camera_id) \
+                        .field("bounding_box", json.dumps(detection["location"])) \
+                        .field("id", json.dumps(detection["id"])) \
+                        .field("score", json.dumps(detection["score"]))
+                    write_api.write(bucket=bucket, org=org, record=p, write_precision=WritePrecision.S)
+
+            p = influxdb_client.Point("people_count") \
+                .tag("camera_location", "digital_hub") \
+                .tag("camera_id", camera_id) \
+                .field("people_count", map_data_dict[camera_id])
+            write_api.write(bucket=bucket, org=org, record=p, write_precision=WritePrecision.S)
+    except asyncio.CancelledError:
+        raise
+
+async def influx_task():
+    try: 
+        while True:
+            now = datetime.datetime.now()
+            if 8 <= now.hour < 18:  # Between 8 AM and 6 PM
+                minutes_to_next = 15 - (now.minute % 15)
+                seconds_to_next = minutes_to_next * 60 - now.second
+
+                await write_influx_data()
+                await asyncio.sleep(seconds_to_next)
+            else:
+                # If outside working hours, sleep until 8 AM the next day
+                next_run = (now + datetime.timedelta(days=1)).replace(hour=8, minute=0, second=0, microsecond=0)
+                time_to_sleep = (next_run - now).total_seconds()
+                print(f"Outside working hours. Sleeping until next run at 8 AM: {next_run}")
+                await asyncio.sleep(time_to_sleep)
+
+    except asyncio.CancelledError:
+        raise
 
 async def send_frame(websocket, request):
     try:
@@ -174,14 +203,19 @@ async def handler(websocket, path):
     except Exception as e:
         print(f"Error on the server: {str(e)}")
 
-if __name__ == '__main__':
+async def main():
+    influx_task_ = asyncio.create_task(influx_task())
+
+    start_server = await websockets.serve(handler, "0.0.0.0", 4444)
+    print("WebSocket server started.")
+
+    await asyncio.gather(influx_task_, start_server.wait_closed())
+
+if __name__ == "__main__":
     client = mqtt.Client()
     client.on_connect = on_connect
     client.on_message = on_message
     client.connect(mqtt_broker, mqtt_port, 60)
     client.loop_start()
 
-    start_server = websockets.serve(handler, "0.0.0.0", 4444)
-    print("WebSocket server started.")
-    asyncio.get_event_loop().run_until_complete(start_server)
-    asyncio.get_event_loop().run_forever()
+    asyncio.run(main())

@@ -13,6 +13,7 @@ from meraki_camera import MerakiCamera
 
 cameras = {
     "Q2PV-W8RK-DDVX":"rtsp://192.168.3.73:9000/live",
+    "test":"rtsp://192.168.3.79:9000/live",
     "Q2PV-DZXG-F3GV":"rtsp://192.168.3.77:9000/live",
     "Q2PV-PQVS-ABKL":"rtsp://192.168.3.76:9000/live",
     "Q2FV-BY6K-RKDN":"rtsp://192.168.3.85:9000/live",
@@ -80,7 +81,7 @@ def query_people_count(camera_id, date_range):
 
 async def write_influx_data():
     try: 
-        for camera_id, raw_data in mqtt_data.items():
+        for camera_id, raw_data in mqtt_data.copy().items():
             for detection in raw_data:
                 if(detection["class"] == 0):
                     p = influxdb_client.Point("detections") \
@@ -123,12 +124,8 @@ async def send_frame(websocket, request):
     try:
         cap = MerakiCamera(cameras[request["camera_id"]])
         while True:
-            json_dict = {
-                "frame": {
-                    "data": cap.get_frame(mqtt_data[request["camera_id"]]),
-                }
-            }
-            await websocket.send(json.dumps(json_dict))
+            bounding_box = mqtt_data[request["camera_id"]] if request["camera_id"] in mqtt_data else None
+            await websocket.send(cap.get_frame(bounding_box))
             await asyncio.sleep(1/24)
     except asyncio.CancelledError:
         raise
@@ -182,7 +179,7 @@ async def handler(websocket, path):
                     except asyncio.CancelledError:
                         print(f"Client {client_ip}:{client_port} frame-task was cancelled.")
                     tasks["frame"] = asyncio.create_task(send_frame(websocket, requests["frame"]))
-            elif "people_count" in requests:
+            if "people_count" in requests:
                 if "people_count" not in tasks: 
                     tasks["people_count"] = asyncio.create_task(send_people_count(websocket, requests["people_count"]))
                 else: # Else cancel the old task and start a new one.

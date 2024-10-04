@@ -7,6 +7,12 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js';
 
+//////////////////////////////// Config //////////////////////////////////
+const config = await fetch('assets/config.json')
+  .then(response => response.json())
+  .then(data => data)
+  .catch(error => console.log(error));
+
 //////////////////////////////// Renderer //////////////////////////////////
 
 const gui = new GUI();
@@ -75,9 +81,13 @@ loader.load(
     model.layers.enableAll();
 
     const labelFolder = gui.addFolder('Label Settings');
-    addRoomLabel('Workspace', model, new THREE.Vector3(-0.6, 0.2, 3), camera, cameraControls);
-    addRoomLabel('Kitchen', model, new THREE.Vector3(-2.5, 0, 1), camera, cameraControls);
-    addRoomLabel('Lounge', model, new THREE.Vector3(-3.3, 0, -1.35), camera, cameraControls);
+    for(let cam_name in config)
+    {
+      if(config[cam_name].label_location)
+      {
+        addRoomLabel(cam_name, model, new THREE.Vector3(...config[cam_name].label_location), camera, cameraControls);
+      }
+    }
   }
 );
 

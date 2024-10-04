@@ -99,11 +99,9 @@ function wait_for_socket_connection(socket, callback){
                     callback();
                 }
                 return;
-
-            } else {
-
+            } 
+            else {
                 console.log("... waiting for web socket connection to come online");
-
                 wait_for_socket_connection(socket,callback);
             }
         }, 5);

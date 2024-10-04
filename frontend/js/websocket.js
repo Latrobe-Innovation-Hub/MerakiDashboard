@@ -27,9 +27,12 @@ function connect() {
         if (message && typeof message.data === "string") {
             let data = JSON.parse(message.data);
             if(data.people_count){
-                console.log("people_count: " + data.people_count)
-                var ctx = document.getElementById('people-counter-graph').getContext('2d');
-                var dummyChart = new Chart(ctx, {
+                let oldChart = Chart.getChart("people-counter-graph");
+                if (oldChart != undefined) {
+                    oldChart.destroy();
+                }
+                
+                let dummyChart = new Chart('people-counter-graph', {
                     type: 'bar',
                     data: {
                         labels: ['1d', '2d', '3d', '4d', '5d'],

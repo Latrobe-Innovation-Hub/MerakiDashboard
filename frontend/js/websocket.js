@@ -8,7 +8,8 @@ const reconnectInterval = 5000;
 
 function connect() {
     socket = new WebSocket(wsUrl);
-
+    window.webSocket = socket;
+    
     socket.onopen = function() {
         console.log("WebSocket connected.");
     };
@@ -65,5 +66,3 @@ function connect() {
 }
 
 connect();
-
-window.webSocket = socket;

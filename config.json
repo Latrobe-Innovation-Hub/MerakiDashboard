@@ -1,0 +1,78 @@
+{
+    "CollaborationHub201C": {
+      "id": "Q2PV-XPVZ-6QSV",
+      "ip_addr": "192.168.3.75"
+    },
+    "5GBoardRoom202": {
+      "id": "",
+      "ip_addr": "192.168.3.79"
+    },
+    "CoWorkLounge201B": {
+      "id": "Q2PV-EFHS-BMY5",
+      "ip_addr": "192.168.3.78",
+      "label_location":[-3.3, 0, -1.35]
+    },
+    "CoWorkSpace216": {
+      "id": "Q2PV-W8RK-DDVX",
+      "ip_addr": "192.168.3.73",
+      "label_location":[-0.6, 0.2, 3]
+    },
+    "DesignStudio1": {
+      "id": "",
+      "ip_addr": "192.168.3.71"
+    },
+    "DesignStudio2-214": {
+      "id": "",
+      "ip_addr": "192.168.3.88"
+    },
+    "Kitchen": {
+      "id": "Q2PV-DZXG-F3GV",
+      "ip_addr": "192.168.3.77",
+      "label_location":[-2.5, 0, 1]
+    },
+    "MakerLab205": {
+      "id": "Q2PV-4ZNH-NJSD",
+      "ip_addr": "192.168.3.80"
+    },
+    "MakerLab206": {
+      "id": "",
+      "ip_addr": "192.168.3.81"
+    },
+    "MakerLab207": {
+      "id": "Q2PV-9TA8-VFMG",
+      "ip_addr": "192.168.3.82"
+    },
+    "MakerSpace204A": {
+      "id": "Q2PV-DAS8-UX6P",
+      "ip_addr": "192.168.3.72"
+    },
+    "MV12-BackDoor": {
+      "id": "",
+      "ip_addr": "192.168.3.86"
+    },
+    "MV12-EntryDoor": {
+      "id": "Q2FV-BY6K-RKDN",
+      "ip_addr": "192.168.3.85"
+    },
+    "OpenDeskSpace203": {
+      "id": "",
+      "ip_addr": "192.168.3.87"
+    },
+    "OutsideMakerLabs": {
+      "id": "",
+      "ip_addr": "192.168.3.83"
+    },
+    "PitchSpace213": {
+      "id": "Q2PV-E88G-SSVY",
+      "ip_addr": "192.168.3.69"
+    },
+    "PresentationEntry200": {
+      "id": "Q2PV-PQVS-ABKL",
+      "ip_addr": "192.168.3.76"
+    },
+    "StudiosBreakOutZone": {
+      "id": "",
+      "ip_addr": "192.168.3.84"
+    }
+}
+  

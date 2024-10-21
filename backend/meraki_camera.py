@@ -3,9 +3,9 @@ import base64
 import asyncio
 
 class MerakiCamera(object):
-    def __init__(self, feed):
-        self.feed = feed
-        self.cap = cv2.VideoCapture(feed)
+    def __init__(self, ip):
+        self.feed = f"rtsp://{ip}:9000/live"
+        self.cap = cv2.VideoCapture(self.feed)
 
     def __del__(self):
         self.cap.release()

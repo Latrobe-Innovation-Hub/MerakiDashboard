@@ -9,14 +9,7 @@ import websockets
 from influx_helper import InfluxHelper
 from task_manager import TaskManager
 
-cameras = {
-    "Q2PV-W8RK-DDVX":"rtsp://192.168.3.73:9000/live",
-    "test":"rtsp://192.168.3.79:9000/live",
-    "Q2PV-DZXG-F3GV":"rtsp://192.168.3.77:9000/live",
-    "Q2PV-PQVS-ABKL":"rtsp://192.168.3.76:9000/live",
-    "Q2FV-BY6K-RKDN":"rtsp://192.168.3.85:9000/live",
-    "Q2PV-EFHS-BMY5":"rtsp://192.168.3.78:9000/live"
-}
+cameras = None
 
 influx_helper = InfluxHelper(
     url="http://localhost:8086",
@@ -45,7 +38,8 @@ def on_message(client, userdata, message):
 def on_connect(client, userdata, flags, rc):
     print(f"Connected with result code {rc}")
     for camera in cameras:
-        client.subscribe(f"/merakimv/{camera}/custom_analytics")
+        if cameras[camera]["id"] is not None:
+            client.subscribe(f"/merakimv/{cameras[camera]["id"]}/custom_analytics")
 
 async def handler(websocket, path):
     try:
@@ -58,17 +52,21 @@ async def handler(websocket, path):
             if "frame" in requests:
                 await task_manager.create_task(tasks.send_frame, websocket, requests["frame"], cameras=cameras, mqtt_data=mqtt_data)
             if "people_count" in requests:
-                await task_manager.create_task(tasks.send_people_count, websocket, requests["people_count"], influx_helper=influx_helper)
+                await task_manager.create_task(tasks.send_people_count, websocket, requests["people_count"], cameras=cameras, influx_helper=influx_helper)
             if "map_data" in requests:
                 await task_manager.create_task(tasks.send_map_data, websocket, requests["map_data"], map_data_dict=map_data_dict)
 
     except (websockets.exceptions.ConnectionClosedOK, websockets.exceptions.ConnectionClosed):
-        task_manager.cancel_all()
+        await task_manager.cancel_all()
         print(f"Client {websocket.remote_address} disconnected. Waiting for a new connection...")
     except Exception as e:
         print(f"Error on the server: {str(e)}")
 
 async def main():
+    global cameras
+    with open("config.json") as config:
+        cameras = json.load(config)
+
     client = mqtt.Client()
     client.on_connect = on_connect
     client.on_message = on_message

@@ -30,9 +30,11 @@ async def send_frame(websocket, request, **kwargs):
         cameras_dict = kwargs.pop('cameras')
         mqtt_data = kwargs.pop('mqtt_data')
 
-        cap = MerakiCamera(cameras_dict[request["camera_id"]])
+        camera = cameras_dict[request["camera_name"]]
+
+        cap = MerakiCamera(camera["ip_addr"])
         while True:
-            bounding_box = mqtt_data[request["camera_id"]] if request["camera_id"] in mqtt_data else None
+            bounding_box = mqtt_data[camera["id"]] if camera["id"] in mqtt_data else None
             await websocket.send(cap.get_frame(bounding_box))
             await asyncio.sleep(1/24)
     except asyncio.CancelledError:
@@ -42,12 +44,15 @@ async def send_frame(websocket, request, **kwargs):
 
 async def send_people_count(websocket, request, **kwargs):
     try:
+        cameras_dict = kwargs.pop('cameras')
         influx_helper = kwargs.pop("influx_helper")
+
+        camera = cameras_dict[request["camera_name"]]
 
         while True:
             json_dict = {
                 "people_count": {
-                    "data": await utils.query_people_count(request["camera_id"], request["date_range"], influx_helper),
+                    "data": await utils.query_people_count(camera["id"], request["date_range"], influx_helper),
                 }
             }
             await websocket.send(json.dumps(json_dict))

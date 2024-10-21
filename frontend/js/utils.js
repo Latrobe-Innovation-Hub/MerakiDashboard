@@ -46,42 +46,16 @@ export function addRoomLabel(name, model, position, camera, controls, gui_folder
             });
         }
 
-        if(name === "Workspace"){
-            const msg = {
-                "people_count": {
-                    "camera_id": "Q2PV-W8RK-DDVX",
-                    "date_range": "7d"
-                },
-                "frame": {
-                    "camera_id": "Q2PV-W8RK-DDVX",
-                }
-            };
-            webSocketRequest(JSON.stringify(msg))
-        }
-        else if(name === "Kitchen"){
-            const msg = {
-                "people_count": {
-                    "camera_id": "Q2PV-DZXG-F3GV",
-                    "date_range": "7d"
-                },
-                "frame": {
-                    "camera_id": "Q2PV-DZXG-F3GV",
-                }
-            };
-            webSocketRequest(JSON.stringify(msg))
-        }
-        else{
-            const msg = {
-                "people_count": {
-                    "camera_id": "Q2PV-EFHS-BMY5",
-                    "date_range": "7d"
-                },
-                "frame": {
-                    "camera_id": "Q2PV-EFHS-BMY5",
-                }
-            };
-            webSocketRequest(JSON.stringify(msg))
-        }
+        const msg = {
+            "people_count": {
+                "camera_name": name,
+                "date_range": "7d"
+            },
+            "frame": {
+                "camera_name": name,
+            }
+        };
+        webSocketRequest(JSON.stringify(msg))
     });
 }
 

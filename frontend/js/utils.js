@@ -20,7 +20,7 @@ export function addRoomLabel(name, model, position, camera, controls, gui_folder
     }
 
     labelDiv.addEventListener('click', () => {
-        const targetPosition = { x: position.x, y: position.y + 3, z: position.z + 1 };
+        const targetPosition = { x: position.x, y: position.y + 4.5, z: position.z + 1.5 };
 
         gsap.to(camera.position, {
             x: targetPosition.x,

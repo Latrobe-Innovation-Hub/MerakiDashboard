@@ -33,11 +33,13 @@ document.body.appendChild(labelRenderer.domElement);
 //////////////////////////////// Camera //////////////////////////////////
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0, 6, 5);
-camera.rotation.set(-1, 0, 0);
+camera.position.set(0, 8, 5.1);
 
 const cameraControls = new OrbitControls(camera, labelRenderer.domElement);
 cameraControls.target.set(0, 0, 0);
+// Prevent user from panning the camera underneath the model
+cameraControls.maxPolarAngle = Math.PI / 2.5;
+cameraControls.update();
 
 const cameraFolder = gui.addFolder('Camera Settings');
 
@@ -63,6 +65,10 @@ cameraFolder.open();
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xbfe3dd);
+
+var hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444 , 1.2);
+hemiLight.position.set(0, 10, 0);
+scene.add(hemiLight);
 
 const light = new THREE.DirectionalLight(0xffffff, 1);
 light.position.set(5, 10, 7.5).normalize();

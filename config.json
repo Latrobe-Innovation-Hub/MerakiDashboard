@@ -1,78 +1,93 @@
 {
     "CollaborationHub201C": {
       "id": "Q2PV-XPVZ-6QSV",
-      "ip_addr": "192.168.3.75"
+      "ip_addr": "192.168.3.75",
+      "label_location":[0, 0, 0]
     },
     "5GBoardRoom202": {
       "id": "",
-      "ip_addr": "192.168.3.79"
+      "ip_addr": "192.168.3.79",
+      "label_location":[3.3, 0, 3.1]
     },
     "CoWorkLounge201B": {
       "id": "Q2PV-EFHS-BMY5",
       "ip_addr": "192.168.3.78",
-      "label_location":[-3.3, 0, -1.35]
+      "label_location":[5.3, 0, 2.8]
     },
     "CoWorkSpace216": {
       "id": "Q2PV-W8RK-DDVX",
       "ip_addr": "192.168.3.73",
-      "label_location":[-0.6, 0.2, 3]
+      "label_location":[-0.3, 0.2, -2.13]
     },
     "DesignStudio1": {
       "id": "",
-      "ip_addr": "192.168.3.71"
+      "ip_addr": "192.168.3.71",
+      "label_location":[-2.9, 0, -2.62]
     },
     "DesignStudio2-214": {
       "id": "",
-      "ip_addr": "192.168.3.88"
+      "ip_addr": "192.168.3.88",
+      "label_location":[-4.83, 0, -2.62]
     },
     "Kitchen": {
       "id": "Q2PV-DZXG-F3GV",
       "ip_addr": "192.168.3.77",
-      "label_location":[-2.5, 0, 1]
+      "label_location":[4.4, 0, 0.45]
     },
     "MakerLab205": {
       "id": "Q2PV-4ZNH-NJSD",
-      "ip_addr": "192.168.3.80"
+      "ip_addr": "192.168.3.80",
+      "label_location":[-4.83, 0, 3.1]
     },
     "MakerLab206": {
       "id": "",
-      "ip_addr": "192.168.3.81"
+      "ip_addr": "192.168.3.81",
+      "label_location":[-3, 0, 3.1]
     },
     "MakerLab207": {
       "id": "Q2PV-9TA8-VFMG",
-      "ip_addr": "192.168.3.82"
+      "ip_addr": "192.168.3.82",
+      "label_location":[-6.66, 0, 3.1]
     },
     "MakerSpace204A": {
       "id": "Q2PV-DAS8-UX6P",
-      "ip_addr": "192.168.3.72"
+      "ip_addr": "192.168.3.72",
+      "label_location":[-2.5, 0, 0.33]
     },
     "MV12-BackDoor": {
       "id": "",
-      "ip_addr": "192.168.3.86"
+      "ip_addr": "192.168.3.86",
+      "label_location":[-7, 0, 1.8]
     },
     "MV12-EntryDoor": {
       "id": "Q2FV-BY6K-RKDN",
-      "ip_addr": "192.168.3.85"
+      "ip_addr": "192.168.3.85",
+      "label_location":[5.5, 0, -2.7]
     },
     "OpenDeskSpace203": {
       "id": "",
-      "ip_addr": "192.168.3.87"
+      "ip_addr": "192.168.3.87",
+      "label_location":[-0.29, 0, 2.54]
     },
     "OutsideMakerLabs": {
       "id": "",
-      "ip_addr": "192.168.3.83"
+      "ip_addr": "192.168.3.83",
+      "label_location":[-4.34, 0, 1.8]
     },
     "PitchSpace213": {
       "id": "Q2PV-E88G-SSVY",
-      "ip_addr": "192.168.3.69"
+      "ip_addr": "192.168.3.69",
+      "label_location":[-6.5, 0, -2.13]
     },
     "PresentationEntry200": {
       "id": "Q2PV-PQVS-ABKL",
-      "ip_addr": "192.168.3.76"
+      "ip_addr": "192.168.3.76",
+      "label_location":[3.77, 0, -1.52]
     },
     "StudiosBreakOutZone": {
       "id": "",
-      "ip_addr": "192.168.3.84"
+      "ip_addr": "192.168.3.84",
+      "label_location":[-3.3, 0, -1.22]
     }
 }
   

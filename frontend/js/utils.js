@@ -20,6 +20,14 @@ export function addRoomLabel(name, model, position, camera, controls, gui_folder
     }
 
     labelDiv.addEventListener('click', () => {
+        var container = document.getElementById("side-panel-container");
+        if (container.style.display === "none") {
+            // Add a 1 sec delay to ensure that front-end has received the frames
+            setTimeout(() => {
+                container.style.display = "block";
+            }, 1000);
+        }
+
         const targetPosition = { x: position.x, y: position.y + 4.5, z: position.z + 1.5 };
 
         gsap.to(camera.position, {

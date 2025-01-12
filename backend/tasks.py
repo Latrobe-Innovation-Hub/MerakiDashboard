@@ -32,7 +32,7 @@ async def send_frame(websocket, request, **kwargs):
 
         camera = cameras_dict[request["camera_name"]]
 
-        cap = MerakiCamera(camera["ip_addr"])
+        cap = camera["capture"]
         while True:
             bounding_box = mqtt_data[camera["id"]] if camera["id"] in mqtt_data else None
             await websocket.send(cap.get_frame(bounding_box))

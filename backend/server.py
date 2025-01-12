@@ -8,7 +8,8 @@ import websockets
 
 from influx_helper import InfluxHelper
 from task_manager import TaskManager
-
+from meraki_camera import MerakiCamera
+import time
 cameras = None
 
 influx_helper = InfluxHelper(
@@ -66,6 +67,10 @@ async def main():
     global cameras
     with open("config.json") as config:
         cameras = json.load(config)
+
+    for camera_name in cameras:
+        camera = cameras[camera_name]
+        camera["capture"] = MerakiCamera(camera["ip_addr"])
 
     client = mqtt.Client()
     client.on_connect = on_connect

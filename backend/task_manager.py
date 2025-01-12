@@ -14,6 +14,8 @@ class TaskManager():
                 await self.tasks_list[callback.__name__]
             except asyncio.CancelledError:
                 print(f"Client {websocket.remote_address} {callback.__name__}_task was cancelled.")
+            except Exception as e:
+                print(f"Error in {callback.__name__}_task: {str(e)}")
             self.tasks_list[callback.__name__] = asyncio.create_task(callback(websocket, request, **kwargs))
             
     async def cancel_all(self):

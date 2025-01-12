@@ -6,18 +6,23 @@ class MerakiCamera(object):
     def __init__(self, ip):
         self.feed = f"rtsp://{ip}:9000/live"
         self.cap = cv2.VideoCapture(self.feed)
+        self.retry = 0
 
     def __del__(self):
         self.cap.release()
 
-    def get_frame(self, mqtt_output):
+    def get_frame(self, mqtt_output=None):
         ret, frame = self.cap.read()
 
         while not ret:
+            if self.retry >= 3:
+                raise Exception(f"Exceeded retry limit for: {self.feed}")
             print("Reconneting to rtsp feed")
             self.cap.release()
             self.cap = cv2.VideoCapture(self.feed)
             ret, frame = self.cap.read()
+            self.retry += 1
+        self.retry = 0
             
         if mqtt_output is not None:
             for detection in mqtt_output:

@@ -29,7 +29,7 @@ async def send_frame(websocket, request, **kwargs):
     cap = camera["capture"]
     while True:
         bounding_box = mqtt_data[camera["id"]] if camera["id"] in mqtt_data else None
-        await websocket.send(cap.get_frame(bounding_box))
+        await websocket.send(cap.get_frame(bounding_box, request["hide_feed"]))
         await asyncio.sleep(1/24)
 
 async def send_people_count(websocket, request, **kwargs):

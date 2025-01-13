@@ -1,6 +1,5 @@
 import cv2
-import base64
-import asyncio
+import numpy as np
 
 class MerakiCamera(object):
     def __init__(self, ip):
@@ -11,8 +10,12 @@ class MerakiCamera(object):
     def __del__(self):
         self.cap.release()
 
-    def get_frame(self, mqtt_output=None):
-        ret, frame = self.cap.read()
+    def get_frame(self, mqtt_output=None, hide_feed=False):
+        if not hide_feed:
+            ret, frame = self.cap.read()
+        else:
+            ret = True
+            frame = np.zeros((1080, 1080, 3), dtype = np.uint8)
 
         while not ret:
             if self.retry >= 3:

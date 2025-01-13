@@ -1,5 +1,6 @@
 import gsap from "gsap";
 import { CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+import { webSocketRequest } from "./websocket";
 
 export function addRoomLabel(name, model, position, camera, controls, gui_folder=null) {
     const labelDiv = document.createElement('div');
@@ -20,13 +21,20 @@ export function addRoomLabel(name, model, position, camera, controls, gui_folder
     }
 
     labelDiv.addEventListener('click', () => {
-        var container = document.getElementById("side-panel-container");
+        let container = document.getElementById("side-panel-container");
         if (container.style.display === "none") {
             // Add a 1 sec delay to ensure that front-end has received the frames
             setTimeout(() => {
                 container.style.display = "block";
             }, 1000);
         }
+
+        // Reset toggle every time the user switches camera
+        let camera_toggle = document.getElementById("camera-toggle");
+        camera_toggle.checked = false;
+
+        let selected_camera = document.getElementById("selected-camera");
+        selected_camera.text = name;
 
         const targetPosition = { x: position.x, y: position.y + 4.5, z: position.z + 1.5 };
 
@@ -61,6 +69,7 @@ export function addRoomLabel(name, model, position, camera, controls, gui_folder
             },
             "frame": {
                 "camera_name": name,
+                "hide_feed": false
             }
         };
         webSocketRequest(JSON.stringify(msg))

@@ -64,5 +64,26 @@ function connect() {
         socket.close(); 
     };
 }
-
 connect();
+
+export function webSocketRequest(msg){
+    wait_for_socket_connection(window.webSocket, function() {
+        window.webSocket.send(msg);
+    });
+}
+
+function wait_for_socket_connection(socket, callback){
+    setTimeout(
+        function(){
+            if (socket.readyState === 1) {
+                if(callback !== undefined){
+                    callback();
+                }
+                return;
+            } 
+            else {
+                console.log("... waiting for web socket connection to come online");
+                wait_for_socket_connection(socket,callback);
+            }
+        }, 5);
+};

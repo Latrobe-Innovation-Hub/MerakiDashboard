@@ -23,7 +23,14 @@ function connect() {
         if (message && typeof message.data !== "string") {
             const blob = new Blob([message.data], { type: 'image/jpeg' });
             const url = URL.createObjectURL(blob);
-            document.getElementById('frame-image').src = url;
+            const frame_image = document.getElementById('frame-image');
+    
+            if (frame_image.dataset.url) {
+                URL.revokeObjectURL(frame_image.dataset.url);
+            }
+    
+            frame_image.src = url;
+            frame_image.dataset.url = url;
         }
         if (message && typeof message.data === "string") {
             let data = JSON.parse(message.data);

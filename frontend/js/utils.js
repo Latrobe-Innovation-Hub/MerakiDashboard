@@ -6,7 +6,8 @@ export function addRoomLabel(name, model, position, camera, controls, gui_folder
     const labelDiv = document.createElement('div');
     labelDiv.className = 'label';
     labelDiv.textContent = name;
-
+    labelDiv.style.pointerEvents = 'auto';
+    
     const label = new CSS2DObject(labelDiv);
     label.position.set(...position);
     label.center.set(0.5, 0.5);

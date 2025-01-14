@@ -29,6 +29,7 @@ labelRenderer.setSize(window.innerWidth, window.innerHeight);
 labelRenderer.domElement.style.position = 'absolute';
 labelRenderer.domElement.style.zIndex = '0';
 labelRenderer.domElement.style.top = '0px';
+labelRenderer.domElement.style.pointerEvents = 'none';
 document.body.appendChild(labelRenderer.domElement);
 
 //////////////////////////////// Camera //////////////////////////////////
@@ -36,8 +37,7 @@ document.body.appendChild(labelRenderer.domElement);
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.set(0, 8, 5.1);
 
-const cameraControls = new OrbitControls(camera, labelRenderer.domElement);
-cameraControls.target.set(0, 0, 0);
+const cameraControls = new OrbitControls(camera, renderer.domElement);
 // Prevent user from panning the camera underneath the model
 cameraControls.maxPolarAngle = Math.PI / 2.5;
 cameraControls.update();

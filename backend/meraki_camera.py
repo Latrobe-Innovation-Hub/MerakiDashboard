@@ -20,7 +20,7 @@ class MerakiCamera(object):
         while not ret:
             if self.retry >= 3:
                 raise Exception(f"Exceeded retry limit for: {self.feed}")
-            print("Reconneting to rtsp feed")
+            print(f"Reconneting to {self.feed}")
             self.cap.release()
             self.cap = cv2.VideoCapture(self.feed)
             ret, frame = self.cap.read()

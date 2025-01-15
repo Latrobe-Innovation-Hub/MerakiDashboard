@@ -3,6 +3,7 @@ import datetime
 import json
 
 import utils
+from meraki_camera import MerakiCamera
 
 async def influx_task(influx_helper, mqtt_data, map_data_dict):
     while True:
@@ -27,6 +28,9 @@ async def send_frame(websocket, request, **kwargs):
     camera = cameras_dict[request["camera_name"]]
 
     cap = camera["capture"]
+    if (cap == None):
+        raise ValueError(f"No capture found for camera {request["camera_name"]}")
+    
     while True:
         bounding_box = mqtt_data[camera["id"]] if camera["id"] in mqtt_data else None
         await websocket.send(cap.get_frame(bounding_box, request["hide_feed"]))

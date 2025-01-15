@@ -1,6 +1,7 @@
 import json
 import re
 import tasks
+import os
 
 import paho.mqtt.client as mqtt
 import asyncio
@@ -9,8 +10,6 @@ import websockets
 from influx_helper import InfluxHelper
 from task_manager import TaskManager
 from meraki_camera import MerakiCamera
-import time
-cameras = None
 
 influx_helper = InfluxHelper(
     url="http://localhost:8086",
@@ -63,14 +62,23 @@ async def handler(websocket, path):
     except Exception as e:
         print(f"Error on the server: {str(e)}")
 
+cameras = None
 async def main():
+    os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "timeout;3000"
+
     global cameras
     with open("config.json") as config:
         cameras = json.load(config)
 
     for camera_name in cameras:
         camera = cameras[camera_name]
-        camera["capture"] = MerakiCamera(camera["ip_addr"])
+        try:
+            cap = MerakiCamera(camera["ip_addr"])
+            camera["capture"] = cap
+            cap.get_frame()
+        except Exception as e:
+            print(f"Error occurred while initializing camera {camera_name}: {e}")
+            camera["capture"] = None
 
     client = mqtt.Client()
     client.on_connect = on_connect

@@ -6,6 +6,7 @@ import os
 import paho.mqtt.client as mqtt
 import asyncio
 import websockets
+from ultralytics import YOLO
 
 from influx_helper import InfluxHelper
 from task_manager import TaskManager
@@ -18,6 +19,7 @@ influx_helper = InfluxHelper(
     bucket="meraki"
 )
 
+cameras = None
 mqtt_data = {}
 map_data_dict = {}
 
@@ -62,18 +64,19 @@ async def handler(websocket, path):
     except Exception as e:
         print(f"Error on the server: {str(e)}")
 
-cameras = None
 async def main():
     os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "timeout;3000"
 
     global cameras
+    model = YOLO("last.pt").to("cuda:0")
+
     with open("config.json") as config:
         cameras = json.load(config)
 
     for camera_name in cameras:
         camera = cameras[camera_name]
         try:
-            cap = MerakiCamera(camera["ip_addr"])
+            cap = MerakiCamera(camera["ip_addr"], model)
             camera["capture"] = cap
             cap.get_frame()
         except Exception as e:

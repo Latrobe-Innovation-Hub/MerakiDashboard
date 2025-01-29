@@ -16,9 +16,9 @@ export function addRoomLabel(name, model, position, camera, controls, gui_folder
 
     if (gui_folder) {
         const labelPosition = { x: position.x, y: position.y, z: position.z };
-        gui_folder.add(labelPosition, 'x', -5, 5).name(`${name} X`).onChange((value) => { label.position.x = value; });
-        gui_folder.add(labelPosition, 'y', -5, 5).name(`${name} Y`).onChange((value) => { label.position.y = value; });
-        gui_folder.add(labelPosition, 'z', -5, 5).name(`${name} Z`).onChange((value) => { label.position.z = value; });
+        gui_folder.add(labelPosition, 'x', -6, 6).name(`${name} X`).onChange((value) => { label.position.x = value; });
+        gui_folder.add(labelPosition, 'y', -6, 6).name(`${name} Y`).onChange((value) => { label.position.y = value; });
+        gui_folder.add(labelPosition, 'z', -6, 6).name(`${name} Z`).onChange((value) => { label.position.z = value; });
     }
 
     labelDiv.addEventListener('click', () => {

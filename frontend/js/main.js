@@ -15,7 +15,7 @@ const config = await fetch('assets/config.json')
 
 //////////////////////////////// Renderer //////////////////////////////////
 
-const gui = new GUI();
+// const gui = new GUI();
 
 const renderer = new THREE.WebGLRenderer({ 
   canvas: document.querySelector('#canvas'),
@@ -42,25 +42,25 @@ const cameraControls = new OrbitControls(camera, renderer.domElement);
 cameraControls.maxPolarAngle = Math.PI / 2.5;
 cameraControls.update();
 
-const cameraFolder = gui.addFolder('Camera Settings');
+// const cameraFolder = gui.addFolder('Camera Settings');
 
-const cameraPosition = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
-cameraFolder.add(cameraPosition, 'x', -10, 10).name('Camera X').onChange((value) => { camera.position.x = value; });
-cameraFolder.add(cameraPosition, 'y', -10, 10).name('Camera Y').onChange((value) => { camera.position.y = value; });
-cameraFolder.add(cameraPosition, 'z', 0, 20).name('Camera Z').onChange((value) => { camera.position.z = value; });
+// const cameraPosition = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
+// cameraFolder.add(cameraPosition, 'x', -10, 10).name('Camera X').onChange((value) => { camera.position.x = value; });
+// cameraFolder.add(cameraPosition, 'y', -10, 10).name('Camera Y').onChange((value) => { camera.position.y = value; });
+// cameraFolder.add(cameraPosition, 'z', 0, 20).name('Camera Z').onChange((value) => { camera.position.z = value; });
 
-const cameraRotation = { x: camera.rotation.x, y: camera.rotation.y, z: camera.rotation.z };
-cameraFolder.add(cameraRotation, 'x', -Math.PI, Math.PI).name('Rotation X').onChange((value) => { camera.rotation.x = value; });
-cameraFolder.add(cameraRotation, 'y', -Math.PI, Math.PI).name('Rotation Y').onChange((value) => { camera.rotation.y = value; });
-cameraFolder.add(cameraRotation, 'z', -Math.PI, Math.PI).name('Rotation Z').onChange((value) => { camera.rotation.z = value; });
+// const cameraRotation = { x: camera.rotation.x, y: camera.rotation.y, z: camera.rotation.z };
+// cameraFolder.add(cameraRotation, 'x', -Math.PI, Math.PI).name('Rotation X').onChange((value) => { camera.rotation.x = value; });
+// cameraFolder.add(cameraRotation, 'y', -Math.PI, Math.PI).name('Rotation Y').onChange((value) => { camera.rotation.y = value; });
+// cameraFolder.add(cameraRotation, 'z', -Math.PI, Math.PI).name('Rotation Z').onChange((value) => { camera.rotation.z = value; });
 
-const cameraFov = { fov: camera.fov };
-cameraFolder.add(cameraFov, 'fov', 10, 100).name('Field of View').onChange((value) => {
-  camera.fov = value;
-  camera.updateProjectionMatrix();
-});
+// const cameraFov = { fov: camera.fov };
+// cameraFolder.add(cameraFov, 'fov', 10, 100).name('Field of View').onChange((value) => {
+//   camera.fov = value;
+//   camera.updateProjectionMatrix();
+// });
 
-cameraFolder.open();
+// cameraFolder.open();
 
 //////////////////////////////// Scene //////////////////////////////////
 
@@ -87,7 +87,7 @@ loader.load(
 
     model.layers.enableAll();
 
-    const labelFolder = gui.addFolder('Label Settings');
+    // const labelFolder = gui.addFolder('Label Settings');
     for(let cam_name in config)
     {
       if(config[cam_name].label_location)

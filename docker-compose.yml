@@ -1,0 +1,52 @@
+services:
+  backend:
+    build: ./backend
+    container_name: meraki_server
+    ports:
+      - "4444:4444"
+    depends_on:
+      - influxdb
+    volumes:
+      - ./config:/app/config
+    env_file:
+      - .env
+    environment:
+      - INFLUXDB_URL=${INFLUXDB_URL}
+      - MQTT_BROKER=${MQTT_BROKER}
+      - MQTT_PORT=${MQTT_PORT}
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - NVIDIA_VISIBLE_DEVICES=all
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  frontend:
+    build: ./frontend
+    container_name: meraki_frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./config:/app/public
+
+  influxdb:
+    image: influxdb:2.7.11
+    container_name: meraki_influxdb
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./database/data:/var/lib/influxdb
+      - ./database/config:/etc/influxdb2
+    env_file:
+      - .env
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=${DOCKER_INFLUXDB_INIT_USERNAME}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${DOCKER_INFLUXDB_INIT_PASSWORD}
+      - DOCKER_INFLUXDB_INIT_ORG=${DOCKER_INFLUXDB_INIT_ORG}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${DOCKER_INFLUXDB_INIT_BUCKET}
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${DOCKER_INFLUXDB_INIT_ADMIN_TOKEN}
+      - DOCKER_INFLUXDB_INIT_RETENTION=${DOCKER_INFLUXDB_INIT_RETENTION}

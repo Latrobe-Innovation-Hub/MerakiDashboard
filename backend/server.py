@@ -12,8 +12,11 @@ from influx_helper import InfluxHelper
 from task_manager import TaskManager
 from meraki_camera import MerakiCamera
 
+MODEL_PATH = "/app/config/model.pt"
+CONFIG_PATH = "/app/config/config.json"
+
 influx_helper = InfluxHelper(
-    url="http://localhost:8086",
+    url=os.environ['INFLUXDB_URL'],
     token="test-token",
     org="digital-hub",
     bucket="meraki"
@@ -43,7 +46,7 @@ def on_connect(client, userdata, flags, rc):
         if cameras[camera]["id"] is not None:
             client.subscribe(f"/merakimv/{cameras[camera]["id"]}/custom_analytics")
 
-async def handler(websocket, path):
+async def handler(websocket, path=None):
     try:
         task_manager = TaskManager()
         print(f"New client connected: {websocket.remote_address}")
@@ -68,9 +71,9 @@ async def main():
     os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "timeout;3000"
 
     global cameras
-    model = YOLO("last.pt").to("cuda:0")
+    model = YOLO(MODEL_PATH).to("cuda:0")
 
-    with open("config.json") as config:
+    with open(CONFIG_PATH) as config:
         cameras = json.load(config)
 
     for camera_name in cameras:
@@ -86,7 +89,7 @@ async def main():
     client = mqtt.Client()
     client.on_connect = on_connect
     client.on_message = on_message
-    client.connect('192.168.3.161', 1883, 60)
+    client.connect(os.environ['MQTT_BROKER'], int(os.environ['MQTT_PORT']), 60)
     client.loop_start()
 
     influx_task_ = asyncio.create_task(tasks.influx_task(influx_helper, mqtt_data, map_data_dict))

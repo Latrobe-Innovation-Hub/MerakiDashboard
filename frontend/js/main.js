@@ -7,8 +7,11 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js';
 
+const FLOORPLAN_PATH = "/floorplan.glb"
+const CONFIG_PATH = "/config.json"
+
 //////////////////////////////// Config //////////////////////////////////
-const config = await fetch('assets/config.json')
+const config = await fetch(CONFIG_PATH)
   .then(response => response.json())
   .then(data => data)
   .catch(error => console.log(error));
@@ -77,7 +80,7 @@ scene.add(light);
 
 const loader = new GLTFLoader();
 loader.load(
-  'assets/test.glb', 
+  FLOORPLAN_PATH, 
   (gltf) => {
     const model = gltf.scene;
     scene.add(model);         
